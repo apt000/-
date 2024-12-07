@@ -1,4 +1,4 @@
-# 大模型量化方法
+# 大模型量化方法 && Safetensors
 ## GPTQ  
 GPTQ是一种针对大规模预训练Transformer模型的精确训练后量化算法，旨在降低模型大小和计算需求，保持高准确度和推理速度。  
 通过最小化量化引入的输出误差，在不重新训练模型的情况下，将大模型权重量化到低比特，同时尽可能保持模型的性能。  
@@ -33,5 +33,42 @@ python3 convert-to-gguf.py \
 ### 使用量化后的模型
 `./main -m llama2-7b-chat-q4_0.gguf -p "Explain quantum physics in simple terms." `
 
+# Safetensors
+Safetensor 是由 Hugging Face 开发的一种用于安全存储和高效加载张量数据的文件格式及相关技术。  
+Safetensor使用特殊的数据结构保证了数据的安全性。采用特定的二进制格式，文件结构包含头部、张量元数据和张量数据。头部记录文件的元数据，如格式版本、数据长度等；张量元数据描述每个张量的名称、数据类型、形状等信息；张量数据则是实际存储的紧凑二进制格式的张量数值。这种结构使得数据的存储和读取更加有序和高效，并且使用校验和机制来防止序列化张量在存储或传输过程中出现损坏，还能防止 DOS 攻击，安全性高。  
+Safetensor还针对速度进行了优化，结合高效的序列化和压缩算法，减少大型张量的大小。此外，支持内存映射，文件的布局设计使得读取特定张量时无需加载整个文件，进一步提升了性能，在处理大规模模型时优势明显。  
+同时Safetensor的兼容性比普通的tensor格式的跨平台兼容性更好。  
+`pip install safetensors`  
+**保存为safetensors格式**  
+```
+import torch
+from safetensors.torch import save_file
+
+tensors = {
+    "embedding": torch.zeros((2, 2)),
+    "attention": torch.zeros((2, 3))
+}
+save_file(tensors, "model.safetensors")
+```
+**加载safetensors格式**  
+```
+from safetensors import safe_open
+
+tensors = {}
+with safe_open("model.safetensors", framework="pt", device=0) as f:
+    for k in f.keys():
+        tensors[k] = f.get_tensor(k)
+```
+**惰性加载**  
+可以在不加载整个文件的情况下查看文件的信息或者只加载文件中的部分张量而不是所有张量。  
+```
+from safetensors import safe_open
+
+tensors = {}
+with safe_open("model.safetensors", framework="pt", device=0) as f:
+    tensor_slice = f.get_slice("embedding")
+    vocab_size, hidden_dim = tensor_slice.get_shape()
+    tensor = tensor_slice[:, :hidden_dim]
+```
 
 
