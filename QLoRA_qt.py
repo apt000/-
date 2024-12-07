@@ -18,6 +18,7 @@ model = AutoModelForCausalLM.from_pretrained(
     model_name,
     device_map="auto",  # 自动将模型分配到 GPU
     load_in_4bit=load_in_4bit,
+    # load_in_8bit=True,
     quantization_config=bnb.QuantizationConfig(load_in_4bit=True)
 )
 
