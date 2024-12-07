@@ -70,5 +70,10 @@ with safe_open("model.safetensors", framework="pt", device=0) as f:
     vocab_size, hidden_dim = tensor_slice.get_shape()
     tensor = tensor_slice[:, :hidden_dim]
 ```
+## safetensors的三个组成部分  
+**header**：前面的 8 bytes是一个无符号的整数，表示 header 占的字节数，存储了格式版本相关的字节。  
+**N bytes**：是一个UTF-8编码JSON字符串，存储 header 的内容，里面为模型权重的元数据信息。  
+**rest of file**：存储模型权重 tensor 的值。  
+![image](https://github.com/user-attachments/assets/215fed37-ec5d-4fa3-8aea-fbbd015a6374)
 
 
